@@ -1,0 +1,247 @@
+<!DOCTYPE html>
+<html lang="ar" dir="ltr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>محاكي لوحة المفاتيح</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Arial', sans-serif;
+        }
+
+        body {
+            min-height: 100vh;
+            background: #1a1a1a;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            gap: 2rem;
+        }
+
+        .info-panel {
+            background: rgba(255, 255, 255, 0.1);
+            padding: 1rem 2rem;
+            border-radius: 10px;
+            color: #fff;
+            text-align: center;
+        }
+
+        .keyboard {
+            background: rgba(255, 255, 255, 0.1);
+            padding: 2rem;
+            border-radius: 15px;
+            box-shadow: 0 0 20px rgba(0, 0, 0, 0.3);
+        }
+
+        .row {
+            display: flex;
+            justify-content: center;
+            gap: 0.5rem;
+            margin-bottom: 0.5rem;
+        }
+
+        .key {
+            width: 60px;
+            height: 60px;
+            background: rgba(255, 255, 255, 0.9);
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.2rem;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            position: relative;
+            box-shadow: 0 4px 0 rgba(0, 0, 0, 0.2);
+        }
+
+        .key.special {
+            width: 100px;
+        }
+
+        .key.space {
+            width: 400px;
+        }
+
+        .key.pressed {
+            transform: translateY(4px);
+            box-shadow: 0 0 0 rgba(0, 0, 0, 0.2);
+            background: #4CAF50;
+            color: white;
+            animation: pulse 0.2s ease-in-out;
+        }
+
+        @keyframes pulse {
+            0% { transform: scale(1) translateY(4px); }
+            50% { transform: scale(1.05) translateY(4px); }
+            100% { transform: scale(1) translateY(4px); }
+        }
+
+        .key span.ar {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            font-size: 0.8rem;
+            color: #666;
+        }
+
+        .key span.en {
+            position: absolute;
+            bottom: 10px;
+            left: 10px;
+            font-size: 0.8rem;
+            color: #666;
+        }
+    </style>
+</head>
+<body>
+    <div class="info-panel">
+        <h2 id="keyInfo">اضغط على أي مفتاح</h2>
+    </div>
+    <div class="keyboard" id="keyboard"></div>
+
+    <script>
+        const keyboardLayout = [
+            [
+                { code: 'Escape', ar: 'خروج', en: 'Esc' },
+                { code: 'F1', ar: 'F1', en: 'F1' },
+                { code: 'F2', ar: 'F2', en: 'F2' },
+                { code: 'F3', ar: 'F3', en: 'F3' },
+                { code: 'F4', ar: 'F4', en: 'F4' },
+                { code: 'F5', ar: 'F5', en: 'F5' },
+                { code: 'F6', ar: 'F6', en: 'F6' },
+                { code: 'F7', ar: 'F7', en: 'F7' },
+                { code: 'F8', ar: 'F8', en: 'F8' },
+                { code: 'F9', ar: 'F9', en: 'F9' },
+                { code: 'F10', ar: 'F10', en: 'F10' },
+                { code: 'F11', ar: 'F11', en: 'F11' },
+                { code: 'F12', ar: 'F12', en: 'F12' }
+            ],
+            [
+                { code: 'Backquote', ar: 'ذ', en: '`' },
+                { code: 'Digit1', ar: '١', en: '1' },
+                { code: 'Digit2', ar: '٢', en: '2' },
+                { code: 'Digit3', ar: '٣', en: '3' },
+                { code: 'Digit4', ar: '٤', en: '4' },
+                { code: 'Digit5', ar: '٥', en: '5' },
+                { code: 'Digit6', ar: '٦', en: '6' },
+                { code: 'Digit7', ar: '٧', en: '7' },
+                { code: 'Digit8', ar: '٨', en: '8' },
+                { code: 'Digit9', ar: '٩', en: '9' },
+                { code: 'Digit0', ar: '٠', en: '0' },
+                { code: 'Minus', ar: '-', en: '-' },
+                { code: 'Equal', ar: '=', en: '=' },
+                { code: 'Backspace', ar: 'حذف', en: '⌫', special: true }
+            ],
+            [
+                { code: 'Tab', ar: 'Tab', en: '↹', special: true },
+                { code: 'KeyQ', ar: 'ض', en: 'Q' },
+                { code: 'KeyW', ar: 'ص', en: 'W' },
+                { code: 'KeyE', ar: 'ث', en: 'E' },
+                { code: 'KeyR', ar: 'ق', en: 'R' },
+                { code: 'KeyT', ar: 'ف', en: 'T' },
+                { code: 'KeyY', ar: 'غ', en: 'Y' },
+                { code: 'KeyU', ar: 'ع', en: 'U' },
+                { code: 'KeyI', ar: 'ه', en: 'I' },
+                { code: 'KeyO', ar: 'خ', en: 'O' },
+                { code: 'KeyP', ar: 'ح', en: 'P' },
+                { code: 'BracketLeft', ar: 'ج', en: '[' },
+                { code: 'BracketRight', ar: 'د', en: ']' },
+                { code: 'Backslash', ar: '\\', en: '\\' }
+            ],
+            [
+                { code: 'CapsLock', ar: 'Caps', en: '⇪', special: true },
+                { code: 'KeyA', ar: 'ش', en: 'A' },
+                { code: 'KeyS', ar: 'س', en: 'S' },
+                { code: 'KeyD', ar: 'ي', en: 'D' },
+                { code: 'KeyF', ar: 'ب', en: 'F' },
+                { code: 'KeyG', ar: 'ل', en: 'G' },
+                { code: 'KeyH', ar: 'ا', en: 'H' },
+                { code: 'KeyJ', ar: 'ت', en: 'J' },
+                { code: 'KeyK', ar: 'ن', en: 'K' },
+                { code: 'KeyL', ar: 'م', en: 'L' },
+                { code: 'Semicolon', ar: 'ك', en: ';' },
+                { code: 'Quote', ar: 'ط', en: "'" },
+                { code: 'Enter', ar: 'إدخال', en: '↵', special: true }
+            ],
+            [
+                { code: 'ShiftLeft', ar: 'Shift', en: '⇧', special: true },
+                { code: 'KeyZ', ar: 'ئ', en: 'Z' },
+                { code: 'KeyX', ar: 'ء', en: 'X' },
+                { code: 'KeyC', ar: 'ؤ', en: 'C' },
+                { code: 'KeyV', ar: 'ر', en: 'V' },
+                { code: 'KeyB', ar: 'لا', en: 'B' },
+                { code: 'KeyN', ar: 'ى', en: 'N' },
+                { code: 'KeyM', ar: 'ة', en: 'M' },
+                { code: 'Comma', ar: 'و', en: ',' },
+                { code: 'Period', ar: 'ز', en: '.' },
+                { code: 'Slash', ar: 'ظ', en: '/' },
+                { code: 'ShiftRight', ar: 'Shift', en: '⇧', special: true }
+            ],
+            [
+                { code: 'ControlLeft', ar: 'Ctrl', en: 'Ctrl', special: true },
+                { code: 'MetaLeft', ar: 'Win', en: '⊞', special: true },
+                { code: 'AltLeft', ar: 'Alt', en: 'Alt', special: true },
+                { code: 'Space', ar: 'مسافة', en: 'Space', space: true },
+                { code: 'AltRight', ar: 'Alt', en: 'Alt', special: true },
+                { code: 'MetaRight', ar: 'Win', en: '⊞', special: true },
+                { code: 'ControlRight', ar: 'Ctrl', en: 'Ctrl', special: true }
+            ]
+        ];
+
+        function createKeyboard() {
+            const keyboard = document.getElementById('keyboard');
+            
+            keyboardLayout.forEach(row => {
+                const rowDiv = document.createElement('div');
+                rowDiv.className = 'row';
+                
+                row.forEach(key => {
+                    const keyDiv = document.createElement('div');
+                    keyDiv.className = `key${key.special ? ' special' : ''}${key.space ? ' space' : ''}`;
+                    keyDiv.dataset.code = key.code;
+                    
+                    const arSpan = document.createElement('span');
+                    arSpan.className = 'ar';
+                    arSpan.textContent = key.ar;
+                    
+                    const enSpan = document.createElement('span');
+                    enSpan.className = 'en';
+                    enSpan.textContent = key.en;
+                    
+                    keyDiv.appendChild(arSpan);
+                    keyDiv.appendChild(enSpan);
+                    rowDiv.appendChild(keyDiv);
+                });
+                
+                keyboard.appendChild(rowDiv);
+            });
+        }
+
+        function showKeyInfo(event) {
+            const keyInfo = document.getElementById('keyInfo');
+            const key = event.key;
+            const code = event.code;
+            keyInfo.textContent = `المفتاح: ${key} (${code})`;
+
+            const keyElement = document.querySelector(`[data-code="${code}"]`);
+            if (keyElement) {
+                keyElement.classList.add('pressed');
+                setTimeout(() => {
+                    keyElement.classList.remove('pressed');
+                }, 200);
+            }
+        }
+
+        // Initialize keyboard
+        createKeyboard();
+
+        // Event listeners
+        document.addEventListener('keydown', showKeyInfo);
+    </script>
+</body>
+</html>
